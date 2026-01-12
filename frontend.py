@@ -44,7 +44,6 @@ st.markdown(
 # LOGO E BANNER
 # =========================
 st.image("logo.png", width=180)
-
 st.image("banner.png", use_container_width=True)
 
 st.title("FitMentor")
