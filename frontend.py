@@ -47,7 +47,7 @@ st.image("logo.png", width=180)
 st.image("banner.png", use_container_width=True)
 
 st.title("FitMentor")
-st.caption("Plataforma inteligente para professores de Educação Física")
+st.caption("Plataforma inteligente para Professores de Educação Física e Personal Trainers")
 
 st.title("💪 FitMentor")
 st.subheader("Plano de treino inteligente para seus alunos")
@@ -64,9 +64,9 @@ with st.form("form_aluno"):
     st.subheader("📋 Dados do Aluno")
 
     nome = st.text_input("Nome do aluno")
-    idade = st.number_input("Idade", min_value=5, max_value=100)
-    altura = st.number_input("Altura (m)", min_value=1.0, max_value=2.5)
-    peso = st.number_input("Peso (kg)", min_value=20.0, max_value=250.0)
+    idade = st.number_input("Idade", min_value="", max_value=100)
+    altura = st.number_input("Altura (m)", min_value=0.0, max_value=2.5)
+    peso = st.number_input("Peso (kg)", min_value=0.0, max_value=250.0)
 
     nivel = st.selectbox("Nível", ["Iniciante", "Intermediário", "Avançado"])
     objetivo = st.text_area("Objetivo do treino")
