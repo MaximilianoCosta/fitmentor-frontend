@@ -64,7 +64,7 @@ with st.form("form_aluno"):
     st.subheader("📋 Dados do Aluno")
 
     nome = st.text_input("Nome do aluno")
-    idade = st.number_input("Idade", min_value="", max_value=100)
+    idade = st.number_input("Idade", min_value=0, max_value=100)
     altura = st.number_input("Altura (m)", min_value=0.0, max_value=2.5)
     peso = st.number_input("Peso (kg)", min_value=0.0, max_value=250.0)
 
