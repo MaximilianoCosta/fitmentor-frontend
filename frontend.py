@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # =========================
-# CONFIGURAÇÕES VISUAIS
+# CONFIGURAÇÕES GERAIS
 # =========================
 st.set_page_config(
     page_title="FitMentor",
@@ -10,17 +10,30 @@ st.set_page_config(
     layout="centered"
 )
 
-PRIMARY_COLOR = "#2ECC71"
+# ====== PERSONALIZAÇÃO FÁCIL ======
+PRIMARY_COLOR = "#2ECC71"      # Verde principal
+SECONDARY_COLOR = "#1F2937"    # Cinza escuro
+BACKGROUND_COLOR = "#F9FAFB"   # Fundo claro
 
+# =========================
+# ESTILO GLOBAL
+# =========================
 st.markdown(
     f"""
     <style>
+    body {{
+        background-color: {BACKGROUND_COLOR};
+    }}
     .stButton>button {{
         background-color: {PRIMARY_COLOR};
         color: white;
-        border-radius: 10px;
-        height: 50px;
+        border-radius: 12px;
+        height: 52px;
         font-size: 16px;
+        font-weight: bold;
+    }}
+    h1, h2, h3 {{
+        color: {SECONDARY_COLOR};
     }}
     </style>
     """,
@@ -28,8 +41,15 @@ st.markdown(
 )
 
 # =========================
-# TÍTULO
+# LOGO E BANNER
 # =========================
+st.image("logo.png", width=180)
+
+st.image("banner.png", use_container_width=True)
+
+st.title("FitMentor")
+st.caption("Plataforma inteligente para professores de Educação Física")
+
 st.title("💪 FitMentor")
 st.subheader("Plano de treino inteligente para seus alunos")
 
