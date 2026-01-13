@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # =========================
-# FUNÇÕES (TOPO DO ARQUIVO)
+# FUNÇÕES
 # =========================
 def calcular_imc(peso, altura):
     if altura > 0:
@@ -11,16 +11,16 @@ def calcular_imc(peso, altura):
 
 def classificar_imc(imc):
     if imc < 18.5:
-        return "Abaixo do peso"
+        return "Abaixo do peso", "red"
     elif imc < 25:
-        return "Peso normal"
+        return "Peso normal", "green"
     elif imc < 30:
-        return "Sobrepeso"
+        return "Sobrepeso", "orange"
     else:
-        return "Obesidade"
+        return "Obesidade", "red"
 
 # =========================
-# CONFIGURAÇÕES GERAIS
+# CONFIGURAÇÕES
 # =========================
 st.set_page_config(
     page_title="FitMentor",
@@ -33,7 +33,7 @@ SECONDARY_COLOR = "#1F2937"
 BACKGROUND_COLOR = "#F9FAFB"
 
 # =========================
-# ESTILO GLOBAL
+# ESTILO
 # =========================
 st.markdown(
     f"""
@@ -49,22 +49,19 @@ st.markdown(
         font-size: 16px;
         font-weight: bold;
     }}
-    h1, h2, h3 {{
-        color: {SECONDARY_COLOR};
-    }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # =========================
-# LOGO E TÍTULO
+# LOGO
 # =========================
 st.image("logo.png", width=180)
 st.image("banner.png", use_container_width=True)
 
 st.title("💪 FitMentor")
-st.subheader("Plano de treino inteligente para seus alunos")
+st.subheader("Plano de treino inteligente")
 
 # =========================
 # BACKEND
@@ -72,66 +69,108 @@ st.subheader("Plano de treino inteligente para seus alunos")
 API_URL = "https://fitmentor-backend-0kfp.onrender.com/gerar-treino"
 
 # =========================
-# FORMULÁRIO (SÓ INPUTS)
+# FORMULÁRIO
 # =========================
 with st.form("form_aluno"):
     st.subheader("📋 Dados do Aluno")
 
     nome = st.text_input("Nome do aluno")
+
+    whatsapp = st.text_input(
+        "📱 WhatsApp do aluno (com DDD)",
+        placeholder="Ex: 21987654321"
+    )
+
     idade = st.number_input("Idade", min_value=0, max_value=100)
     altura = st.number_input("Altura (m)", min_value=0.0, max_value=2.5)
     peso = st.number_input("Peso (kg)", min_value=0.0, max_value=250.0)
 
     nivel = st.selectbox("Nível", ["Iniciante", "Intermediário", "Avançado"])
-    objetivo = st.text_area("Objetivo do treino")
 
+    # 🎯 OBJETIVOS (MÚLTIPLA ESCOLHA)
+    st.subheader("🎯 Objetivo do Treino")
+    objetivos_opcoes = [
+        "Emagrecimento",
+        "Hipertrofia",
+        "Condicionamento físico",
+        "Definição muscular",
+        "Saúde e qualidade de vida",
+        "Reabilitação",
+        "Performance esportiva"
+    ]
+
+    objetivos = st.multiselect(
+        "Selecione um ou mais objetivos",
+        objetivos_opcoes
+    )
+
+    # 🧠 ESTILO DE VIDA
     st.subheader("🧠 Estilo de Vida")
 
     bebe = st.selectbox("Consome álcool?", ["Não", "Raramente", "Frequentemente"])
     fuma = st.selectbox("Fuma?", ["Não", "Raramente", "Frequentemente"])
-    anabol = st.selectbox("Usa anabolizantes?", ["Não", "Já usou", "Usa atualmente"])
     alimentacao = st.selectbox("Alimentação", ["Ruim", "Regular", "Boa"])
     sono = st.selectbox("Horas de sono", ["Menos de 5h", "5–6h", "6–7h", "7–8h", "8h+"])
 
-    detalhes = ""
-    if bebe != "Não" or fuma != "Não" or anabol != "Não":
-        detalhes = st.text_input("Detalhe (qual, frequência, histórico)")
+    # ❤️ SAÚDE (PAR-Q)
+    st.subheader("❤️ Saúde do Aluno")
+
+    cirurgia = st.selectbox("Já fez alguma cirurgia que impacta o treino?", ["Não", "Sim"])
+    coracao = st.selectbox("Possui problema cardíaco?", ["Não", "Sim"])
+    tontura = st.selectbox("Sente tontura ou já desmaiou?", ["Não", "Sim"])
+    dor_peito = st.selectbox("Sente dor no peito ao se exercitar?", ["Não", "Sim"])
+    liberacao = st.selectbox("Possui liberação médica?", ["Sim", "Não"])
+
+    observacoes_saude = ""
+    if cirurgia == "Sim" or coracao == "Sim" or tontura == "Sim" or dor_peito == "Sim":
+        observacoes_saude = st.text_area(
+            "Descreva detalhes importantes sobre a saúde do aluno"
+        )
 
     submit = st.form_submit_button("🚀 Gerar Plano de Treino")
 
 # =========================
-# PROCESSAMENTO (FORA DO FORM)
+# PROCESSAMENTO
 # =========================
 if submit:
-    if altura <= 0 or peso <= 0:
-        st.error("Altura e peso devem ser maiores que zero.")
-    elif not nome or not objetivo:
-        st.warning("Preencha o nome e o objetivo do aluno.")
+    if not nome or not objetivos:
+        st.warning("Preencha o nome e selecione ao menos um objetivo.")
+    elif altura <= 0 or peso <= 0:
+        st.error("Altura e peso inválidos.")
     else:
-        # 👉 CÁLCULO DO IMC (AQUI É O LUGAR CERTO)
+        # 📊 IMC
         imc = calcular_imc(peso, altura)
-        classificacao = classificar_imc(imc)
+        classificacao, cor = classificar_imc(imc)
 
         st.subheader("📊 Avaliação Física")
-        st.success(f"IMC do aluno: **{imc}** ({classificacao})")
+        st.markdown(
+            f"<h3 style='color:{cor}'>IMC: {imc} — {classificacao}</h3>",
+            unsafe_allow_html=True
+        )
 
-        # 👉 ENVIO PARA BACKEND
         payload = {
             "nome": nome,
+            "whatsapp": whatsapp,
             "idade": idade,
             "altura": altura,
             "peso": peso,
             "imc": imc,
             "classificacao_imc": classificacao,
             "nivel": nivel,
-            "objetivo": objetivo,
+            "objetivos": objetivos,
             "estilo_vida": {
                 "bebe": bebe,
                 "fuma": fuma,
-                "anabolizante": anabol,
                 "alimentacao": alimentacao,
-                "sono": sono,
-                "detalhes": detalhes
+                "sono": sono
+            },
+            "saude": {
+                "cirurgia": cirurgia,
+                "problema_cardiaco": coracao,
+                "tontura": tontura,
+                "dor_peito": dor_peito,
+                "liberacao_medica": liberacao,
+                "observacoes": observacoes_saude
             }
         }
 
@@ -139,8 +178,7 @@ if submit:
             response = requests.post(API_URL, json=payload)
 
         if response.status_code == 200:
-            plano = response.json()["plano"]
             st.subheader("🏋️ Plano de Treino")
-            st.markdown(plano)
+            st.markdown(response.json()["plano"])
         else:
-            st.error("Erro ao gerar plano. Tente novamente.")
+            st.error("Erro ao gerar o plano.")
