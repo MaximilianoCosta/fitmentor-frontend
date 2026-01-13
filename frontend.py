@@ -19,7 +19,6 @@ def classificar_imc(imc):
     else:
         return "Obesidade", "red"
 
-
 # =========================
 # CONFIGURAÇÃO DA PÁGINA
 # =========================
@@ -30,7 +29,7 @@ st.set_page_config(
 )
 
 # =========================
-# ESTILO GLOBAL
+# ESTILO
 # =========================
 st.markdown("""
 <style>
@@ -52,7 +51,7 @@ st.image("logo.png", width=180)
 st.image("banner.png", use_container_width=True)
 
 st.title("💪 FitMentor")
-st.caption("Plano de treino inteligente com apoio de IA")
+st.caption("Plataforma inteligente para Personal Trainers")
 
 # =========================
 # BACKEND
@@ -67,11 +66,11 @@ with st.form("form_aluno"):
     st.subheader("📋 Dados do Aluno")
 
     nome = st.text_input("Nome do aluno")
-    whatsapp = st.text_input("📱 WhatsApp do aluno (com DDD)", placeholder="Ex: 21999999999")
+    whatsapp = st.text_input("📱 WhatsApp do aluno (com DDD)", placeholder="21999999999")
 
-    idade = st.number_input("Idade", min_value=0, max_value=100)
-    altura = st.number_input("Altura (m)", min_value=0.0, max_value=2.5)
-    peso = st.number_input("Peso (kg)", min_value=0.0, max_value=250.0)
+    idade = st.number_input("Idade", 0, 100)
+    altura = st.number_input("Altura (m)", 0.0, 2.5)
+    peso = st.number_input("Peso (kg)", 0.0, 250.0)
 
     nivel = st.selectbox("Nível", ["Iniciante", "Intermediário", "Avançado"])
 
@@ -101,6 +100,7 @@ with st.form("form_aluno"):
         ["Não", "Sim"]
     )
 
+    # 🔥 CAMPOS DINÂMICOS — APARECEM IMEDIATAMENTE
     cirurgia_local = ""
     cirurgia_tempo = 0
 
@@ -116,14 +116,14 @@ with st.form("form_aluno"):
     coracao = st.selectbox("Possui problema cardíaco?", ["Não", "Sim"])
     tontura = st.selectbox("Sente tontura ou desmaios?", ["Não", "Sim"])
     dor_peito = st.selectbox("Sente dores no peito durante esforço?", ["Não", "Sim"])
-    liberacao = st.selectbox("Possui liberação médica para treino?", ["Sim", "Não"])
+    liberacao = st.selectbox("Possui liberação médica?", ["Sim", "Não"])
 
-    observacoes_saude = st.text_area("Observações adicionais de saúde (opcional)")
+    observacoes_saude = st.text_area("Observações de saúde (opcional)")
 
     submit = st.form_submit_button("🚀 Gerar Plano de Treino")
 
 # =========================
-# RESULTADOS
+# RESULTADO E ENVIO
 # =========================
 if submit:
 
@@ -172,8 +172,7 @@ if submit:
         response = requests.post(API_URL, json=payload)
 
     if response.status_code == 200:
-        plano = response.json().get("plano", "")
-        st.subheader("📄 Plano de Treino Gerado")
-        st.write(plano)
+        st.subheader("📄 Plano de Treino")
+        st.write(response.json().get("plano", ""))
     else:
-        st.error("Erro ao gerar plano. Verifique o backend.")
+        st.error("Erro ao gerar o plano de treino.")
