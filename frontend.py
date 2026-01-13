@@ -1,10 +1,12 @@
 import streamlit as st
 import requests
 
+# =========================
+# FUNÇÕES (TOPO DO ARQUIVO)
+# =========================
 def calcular_imc(peso, altura):
     if altura > 0:
-        imc = peso / (altura ** 2)
-        return round(imc, 2)
+        return round(peso / (altura ** 2), 2)
     return 0
 
 def classificar_imc(imc):
@@ -17,7 +19,6 @@ def classificar_imc(imc):
     else:
         return "Obesidade"
 
-
 # =========================
 # CONFIGURAÇÕES GERAIS
 # =========================
@@ -27,10 +28,9 @@ st.set_page_config(
     layout="centered"
 )
 
-# ====== PERSONALIZAÇÃO FÁCIL ======
-PRIMARY_COLOR = "#2ECC71"      # Verde principal
-SECONDARY_COLOR = "#1F2937"    # Cinza escuro
-BACKGROUND_COLOR = "#F9FAFB"   # Fundo claro
+PRIMARY_COLOR = "#2ECC71"
+SECONDARY_COLOR = "#1F2937"
+BACKGROUND_COLOR = "#F9FAFB"
 
 # =========================
 # ESTILO GLOBAL
@@ -58,24 +58,21 @@ st.markdown(
 )
 
 # =========================
-# LOGO E BANNER
+# LOGO E TÍTULO
 # =========================
 st.image("logo.png", width=180)
 st.image("banner.png", use_container_width=True)
-
-st.title("FitMentor")
-st.caption("Plataforma inteligente para Professores de Educação Física e Personal Trainers")
 
 st.title("💪 FitMentor")
 st.subheader("Plano de treino inteligente para seus alunos")
 
 # =========================
-# URL DO BACKEND
+# BACKEND
 # =========================
 API_URL = "https://fitmentor-backend-0kfp.onrender.com/gerar-treino"
 
 # =========================
-# FORMULÁRIO DO ALUNO
+# FORMULÁRIO (SÓ INPUTS)
 # =========================
 with st.form("form_aluno"):
     st.subheader("📋 Dados do Aluno")
@@ -103,17 +100,29 @@ with st.form("form_aluno"):
     submit = st.form_submit_button("🚀 Gerar Plano de Treino")
 
 # =========================
-# ENVIO PARA BACKEND
+# PROCESSAMENTO (FORA DO FORM)
 # =========================
 if submit:
-    if not nome or not objetivo:
+    if altura <= 0 or peso <= 0:
+        st.error("Altura e peso devem ser maiores que zero.")
+    elif not nome or not objetivo:
         st.warning("Preencha o nome e o objetivo do aluno.")
     else:
+        # 👉 CÁLCULO DO IMC (AQUI É O LUGAR CERTO)
+        imc = calcular_imc(peso, altura)
+        classificacao = classificar_imc(imc)
+
+        st.subheader("📊 Avaliação Física")
+        st.success(f"IMC do aluno: **{imc}** ({classificacao})")
+
+        # 👉 ENVIO PARA BACKEND
         payload = {
             "nome": nome,
             "idade": idade,
             "altura": altura,
             "peso": peso,
+            "imc": imc,
+            "classificacao_imc": classificacao,
             "nivel": nivel,
             "objetivo": objetivo,
             "estilo_vida": {
@@ -131,3 +140,7 @@ if submit:
 
         if response.status_code == 200:
             plano = response.json()["plano"]
+            st.subheader("🏋️ Plano de Treino")
+            st.markdown(plano)
+        else:
+            st.error("Erro ao gerar plano. Tente novamente.")
