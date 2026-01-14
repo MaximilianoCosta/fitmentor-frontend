@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # =========================
-# FUNÇÕES IMC
+# FUNÇÕES
 # =========================
 def calcular_imc(peso, altura):
     if altura > 0:
@@ -20,7 +20,7 @@ def classificar_imc(imc):
         return "Obesidade", "red"
 
 # =========================
-# CONFIGURAÇÃO DA PÁGINA
+# CONFIGURAÇÕES DE PÁGINA
 # =========================
 st.set_page_config(
     page_title="FitMentor",
@@ -29,29 +29,66 @@ st.set_page_config(
 )
 
 # =========================
-# ESTILO
+# ESTILO GLOBAL (CSS)
 # =========================
 st.markdown("""
 <style>
+/* BACKGROUND */
+body {
+  background-color: #F8F9FA;
+}
+
+/* CARD / FORM */
+section[data-testid="stForm"] {
+  background-color: #FFFFFF;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #E0E0E0;
+  box-shadow: 0px 0px 6px rgba(0,0,0,0.06);
+}
+
+/* INPUTS */
+.stTextInput>div>div>input,
+.stNumberInput>div>div>input,
+.stSelectbox>div>div>div,
+.stTextArea>div>div>textarea {
+  border-radius: 8px;
+  border: 1px solid #D1D5DB;
+  padding: 10px;
+  background-color: white;
+}
+
+/* BOTÕES */
 .stButton>button {
-    background-color: #2ECC71;
+    background-color: #1E7F6C;
     color: white;
-    border-radius: 12px;
-    height: 52px;
-    font-size: 16px;
-    font-weight: bold;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 15px;
+}
+
+/* ESTILIZAÇÃO DE RESULTADO */
+.result-box {
+  background-color: #FFFFFF;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #D1D5DB;
+  margin-top: 10px;
+}
+
+h1, h2, h3, .css-1d391kg {
+    color: #2C3E50;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# LOGO E BANNER
+# LOGO
 # =========================
-st.image("logo.png", width=180)
-st.image("banner.png", use_container_width=True)
+st.image("logo.png", width=200)
 
-st.title("💪 FitMentor")
-st.caption("Plataforma inteligente para Personal Trainers")
+st.title("FitMentor")
+st.caption("Treinos personalizados com Inteligência Artificial")
 
 # =========================
 # BACKEND
@@ -60,22 +97,20 @@ API_URL = "https://fitmentor-backend-0kfp.onrender.com/gerar-treino"
 
 # =========================
 # FORMULÁRIO
-# =========================
 with st.form("form_aluno"):
-
     st.subheader("📋 Dados do Aluno")
 
     nome = st.text_input("Nome do aluno")
-    whatsapp = st.text_input("📱 WhatsApp do aluno (com DDD)", placeholder="21999999999")
+    whatsapp = st.text_input("📱 WhatsApp (com DDD)", placeholder="21999999999")
 
-    idade = st.number_input("Idade", 0, 100)
-    altura = st.number_input("Altura (m)", 0.0, 2.5)
-    peso = st.number_input("Peso (kg)", 0.0, 250.0)
+    idade = st.number_input("Idade", min_value=0, max_value=100)
+    altura = st.number_input("Altura (m)", min_value=0.0, max_value=2.5)
+    peso = st.number_input("Peso (kg)", min_value=0.0, max_value=250.0)
 
     nivel = st.selectbox("Nível", ["Iniciante", "Intermediário", "Avançado"])
 
     objetivos = st.multiselect(
-        "🎯 Objetivo do treino",
+        "🎯 Objetivos (selecione um ou mais)",
         [
             "Emagrecimento",
             "Hipertrofia",
@@ -100,7 +135,6 @@ with st.form("form_aluno"):
         ["Não", "Sim"]
     )
 
-    # 🔥 CAMPOS DINÂMICOS — APARECEM IMEDIATAMENTE
     cirurgia_local = ""
     cirurgia_tempo = 0
 
@@ -123,56 +157,30 @@ with st.form("form_aluno"):
     submit = st.form_submit_button("🚀 Gerar Plano de Treino")
 
 # =========================
-# RESULTADO E ENVIO
-# =========================
+# RESULTADO
 if submit:
 
     if not nome or not objetivos:
-        st.warning("Preencha o nome e selecione ao menos um objetivo.")
+        st.warning("Preencha o nome e selecione objetivos.")
         st.stop()
 
     imc = calcular_imc(peso, altura)
     classificacao, cor = classificar_imc(imc)
 
-    st.subheader("📊 Avaliação Física")
-    st.markdown(
-        f"<h3 style='color:{cor}'>IMC: {imc} — {classificacao}</h3>",
-        unsafe_allow_html=True
-    )
-
-    payload = {
-        "nome": nome,
-        "idade": idade,
-        "altura": altura,
-        "peso": peso,
-        "nivel": nivel,
-        "objetivo": objetivos,
-        "contato": {
-            "whatsapp": whatsapp
-        },
-        "estilo_vida": {
-            "bebe": bebe,
-            "fuma": fuma,
-            "alimentacao": alimentacao,
-            "sono": sono
-        },
-        "saude": {
-            "cirurgia": cirurgia,
-            "local_cirurgia": cirurgia_local,
-            "anos_cirurgia": cirurgia_tempo,
-            "problema_cardiaco": coracao,
-            "tontura": tontura,
-            "dor_peito": dor_peito,
-            "liberacao_medica": liberacao,
-            "observacoes": observacoes_saude
-        }
-    }
-
-    with st.spinner("Gerando plano de treino com IA..."):
-        response = requests.post(API_URL, json=payload)
+    with st.spinner("Gerando plano…"):
+        response = requests.post(API_URL, json={
+            "nome": nome,
+            "idade": idade,
+            "altura": altura,
+            "peso": peso,
+            "nivel": nivel,
+            "objetivo": objetivos
+        })
 
     if response.status_code == 200:
-        st.subheader("📄 Plano de Treino")
-        st.write(response.json().get("plano", ""))
+        st.markdown(f"<div class='result-box'><strong>IMC:</strong> {imc} ({classificacao})</div>", unsafe_allow_html=True)
+
+        plano = response.json().get("plano", "")
+        st.markdown(f"<div class='result-box'>{plano}</div>", unsafe_allow_html=True)
     else:
-        st.error("Erro ao gerar o plano de treino.")
+        st.error("Erro ao gerar plano.")
